@@ -33,6 +33,25 @@ def reconstruct_path(node):
         node = node.parent
     return path[::-1]
 
+def calculate_cost(current_g, depth, avg_lookahead_depth, max_depth, depth_weight):
+    """
+    Calculates the new cost to move to a neighbor node.
+
+    Args:
+        current_g: The g-cost from the start to the current node.
+        depth: Depth at the neighbor cell.
+        avg_lookahead_depth: Average depth ahead in the direction of movement.
+        max_depth: Maximum depth in the entire grid.
+        depth_weight: Weight used to scale the depth bonus.
+
+    Returns:
+        New g-cost including depth incentives and penalties.
+    """
+    depth_bonus = depth_weight * np.log1p(avg_lookahead_depth)
+    shallow_penalty = 1000 * np.exp(-depth / max_depth)
+    new_g = current_g + 1 - depth_bonus + shallow_penalty
+    return new_g
+
 
 def a_star(grid, start, goal, vessel_draft, safety_margin, heuristic_weight=1, depth_weight=100, lookahead=4):
     """
@@ -127,12 +146,12 @@ def a_star(grid, start, goal, vessel_draft, safety_margin, heuristic_weight=1, d
             # Calculate costs with logarithmic depth bonus and exponential shallow penalty
             depth_bonus = depth_weight * np.log1p(avg_lookahead_depth)
             shallow_penalty = 1000 * np.exp(-depth / max_depth)
-            new_g = current.g + 1 - depth_bonus + shallow_penalty
 
-            # step_cost = 1 + depth_weight * (1 - depth / max_depth)
+            # Calculate new g value with depth bonus and shallow penalty
+            # Adjust g value based on depth and lookahead
+            # new_g = current.g + 1 - depth_bonus + shallow_penalty
 
-            # cumulative cost to reach the new node
-            # new_g = current.g + step_cost
+            new_g = calculate_cost(current.g, depth, avg_lookahead_depth, max_depth, depth_weight)
 
             # Skip if we already have a better path
             if neighbor_pos in g_score and g_score[neighbor_pos] <= new_g:
