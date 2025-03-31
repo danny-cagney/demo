@@ -65,6 +65,14 @@ def build_constraint_table(constraints, agent_id):
         table[key] = True
     return table
 
+def calculate_cost(current_g, depth, avg_lookahead_depth, max_depth, depth_weight):
+    """
+    Calculates the updated cost to reach a neighboring node using maritime-aware depth evaluation.
+    """
+    depth_bonus = depth_weight * np.log1p(avg_lookahead_depth)
+    shallow_penalty = 1000 * np.exp(-depth / max_depth) if max_depth > 0 else 0
+    return current_g + 1 - depth_bonus + shallow_penalty
+
 # -----------------------------
 # Constraint-Aware A* Algorithm (using original maritime-specific optimizations)
 # -----------------------------
@@ -154,9 +162,7 @@ def a_star_with_constraints(grid, start, goal, draft, safety_margin, constraints
                 continue
 
             avg_lookahead_depth = sum(lookahead_depths) / len(lookahead_depths)
-            depth_bonus = depth_weight * np.log1p(avg_lookahead_depth)
-            shallow_penalty = 1000 * np.exp(-depth / max_depth) if max_depth > 0 else 0
-            new_g = current.g + 1 - depth_bonus + shallow_penalty
+            new_g = calculate_cost(current.g, depth, avg_lookahead_depth, max_depth, depth_weight)
 
             next_state = (nx, ny, next_time)
             if next_state not in closed_set and (next_state not in g_score or new_g < g_score[next_state]):
