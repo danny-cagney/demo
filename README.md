@@ -22,7 +22,7 @@ This project provides a depth-aware, collision-avoiding pathfinding system for m
 
 1. Clone the repository:
    ```
-   git clone https://github.com/yourusername/maritime-vessel-navigation.git
+   git clone https://github.com/danny-cagney/demo.git
    cd maritime-vessel-navigation
    ```
 
